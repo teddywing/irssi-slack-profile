@@ -1,5 +1,6 @@
 use strict;
 
+use JSON;
 use LWP::UserAgent;
 use HTTP::Request::Common;
 use Mozilla::CA;
@@ -23,3 +24,12 @@ sub users_list {
 		print $resp->message . "\n";
 	}
 }
+
+
+open(my $fh, '<', 'users.list.json');
+{
+	local $/;
+	my $json_text = <$fh>;
+	my $users_list = decode_json($json_text);
+}
+close $fh;
