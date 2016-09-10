@@ -10,6 +10,18 @@ use HTTP::Request::Common;
 use Mozilla::CA;
 use Storable;
 
+use vars qw($VERSION %IRSSI);
+use Irssi;
+
+$VERSION = '1.00';
+%IRSSI = {
+	authors     => 'Teddy Wing',
+	contact     => 'irssi@teddywing.com',
+	name        => 'Slack Profile',
+	description => 'Update and retrieve user profile information from Slack.',
+	license     => 'GPL',
+};
+
 sub users_list {
 	my $ua = LWP::UserAgent->new;
 	$ua->agent('Mozilla/5.0');
