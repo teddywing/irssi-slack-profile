@@ -9,6 +9,7 @@ use LWP::UserAgent;
 use HTTP::Request::Common;
 use Mozilla::CA;
 use POSIX;
+use Storable;
 
 sub users_list {
 	my $ua = LWP::UserAgent->new;
@@ -55,19 +56,20 @@ sub binary_search {
 	return -1;
 }
 
-open(my $fh, '<', 'users.list.json');
-{
-	local $/;
-	my $json_text = <$fh>;
-	my $users_list = decode_json($json_text);
-	my @members = @{$users_list->{'members'}};
+# open(my $fh, '<', 'users.list.json');
+# {
+# 	local $/;
+# 	my $json_text = <$fh>;
+# 	my $users_list = decode_json($json_text);
+# 	my @members = @{$users_list->{'members'}};
+# 	store \@members, 'users.list.plstore';
+#
 
+my @members = retrieve('users.list.plstore');
 	my $username = 'teddy';
 	my $user = binary_search($users_list->{'members'}, (sub {
 		my ($user) = @_;
 
-		# say Dumper($user);
-		say $user->{'name'};
 		if ($username eq $user->{'name'}) { return 0; }
 		elsif ($username gt $user->{'name'}) { return -1; }
 		else { return 1; }
@@ -75,13 +77,15 @@ open(my $fh, '<', 'users.list.json');
 
 	say Dumper($user);
 	say $user->{'name'};
-
-
-	# for my $user (@members) {
-	# 	if ($user->{'name'} eq 'slackbot') {
-	# 		say Dumper($user);
-	# 		last;
-	# 	}
-	# }
-}
-close $fh;
+#
+#
+# say @members[0]->[0]{'name'};
+# say Dumper(@members[0]);
+# 	for my $user (@{@members[0]}) {
+# 		if ($user->{'name'} eq 'slackbot') {
+# 			# say Dumper($user);
+# 			last;
+# 		}
+# 	}
+# # }
+# close $fh;
