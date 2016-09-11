@@ -68,6 +68,14 @@ sub swhois {
 	# 	return;
 	# }
 
+	sub maybe_print_field {
+		my ($name, $value) = @_;
+
+		if ($value) {
+			Irssi::print("  $name : $value");
+		}
+	}
+
 	if ($data) {
 		# If $data starts with @, strip it
 		$data =~ s/^@//;
@@ -80,17 +88,11 @@ sub swhois {
 			}
 
 			Irssi::print($user->{'name'} . $bot);
-			Irssi::print('  name  : ' . $user->{'real_name'});
-			Irssi::print('  title : ' . $user->{'profile'}->{'title'});
-			Irssi::print('  email : ' . $user->{'profile'}->{'email'});
-
-			if ($user->{'profile'}->{'phone'}) {
-				Irssi::print('  phone : ' . $user->{'profile'}->{'phone'});
-			}
-
-			if ($user->{'profile'}->{'skype'}) {
-				Irssi::print('  skype : ' . $user->{'profile'}->{'skype'});
-			}
+			maybe_print_field('name', $user->{'real_name'});
+			maybe_print_field('title', $user->{'profile'}->{'title'});
+			maybe_print_field('email', $user->{'profile'}->{'email'});
+			maybe_print_field('phone', $user->{'profile'}->{'phone'});
+			maybe_print_field('skype', $user->{'profile'}->{'skype'});
 
 			Irssi::print('End of SWHOIS');
 		}
