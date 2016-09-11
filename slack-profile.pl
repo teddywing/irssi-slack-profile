@@ -107,7 +107,7 @@ sub swhois {
 			}
 
 			Irssi::print($user->{'name'} . $bot);
-			maybe_print_field('name', $user->{'real_name'});
+			maybe_print_field('name ', $user->{'real_name'});
 			maybe_print_field('title', $user->{'profile'}->{'title'});
 			maybe_print_field('email', $user->{'profile'}->{'email'});
 			maybe_print_field('phone', $user->{'profile'}->{'phone'});
