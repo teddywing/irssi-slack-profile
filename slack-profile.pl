@@ -55,7 +55,6 @@ sub find_user {
 	for my $user (@{@users_list[0]}) {
 		if ($user->{'name'} eq $username) {
 			return $user;
-			last;
 		}
 	}
 }
