@@ -22,6 +22,8 @@ $VERSION = '1.00';
 	license     => 'GPL',
 };
 
+my @users_list;
+
 sub users_list {
 	my $ua = LWP::UserAgent->new;
 	$ua->agent('Mozilla/5.0');
@@ -45,9 +47,12 @@ sub users_list {
 sub find_user {
 	my ($username) = @_;
 
-	my @members = retrieve('users.list.plstore');
+	if (!@users_list) {
+		my $file = 'users.list.plstore';
+		@users_list = retrieve($file);
+	}
 
-	for my $user (@{@members[0]}) {
+	for my $user (@{@users_list[0]}) {
 		if ($user->{'name'} eq $username) {
 			return $user;
 			last;
