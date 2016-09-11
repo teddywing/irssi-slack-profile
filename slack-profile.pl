@@ -28,6 +28,8 @@ sub users_list {
 	my $ua = LWP::UserAgent->new;
 	$ua->agent('Mozilla/5.0');
 
+	$token = Irssi::settings_get_str('slack_profile_token');
+
 	my $req = HTTP::Request->new(GET => 'http://ip.jsontest.com/');
 
 	$req->header('content-type' => 'application/json');
@@ -103,3 +105,5 @@ sub swhois {
 }
 
 Irssi::command_bind('swhois', 'swhois');
+
+Irssi::settings_add_str('slack_profile', 'slack_profile_token', '');
