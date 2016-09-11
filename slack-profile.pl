@@ -9,6 +9,7 @@ use LWP::UserAgent;
 use HTTP::Request::Common;
 use Mozilla::CA;
 use Storable;
+use URI;
 
 use vars qw($VERSION %IRSSI);
 use Irssi;
@@ -24,25 +25,39 @@ $VERSION = '1.00';
 
 my @users_list;
 
-sub users_list {
+sub users_list_cache {
+	Irssi::get_irssi_dir() . '/scripts/users.list.plstore';
+}
+
+sub fetch_users_list {
 	my $ua = LWP::UserAgent->new;
 	$ua->agent('Mozilla/5.0');
 
-	$token = Irssi::settings_get_str('slack_profile_token');
+	my $token = Irssi::settings_get_str('slack_profile_token');
+	my $url = URI->new('https://slack.com/api/users.list');
+	$url->query_form(token => $token);
 
-	my $req = HTTP::Request->new(GET => 'http://ip.jsontest.com/');
+	my $req = HTTP::Request->new(GET => $url);
 
 	$req->header('content-type' => 'application/json');
 
 	my $resp = $ua->request($req);
 
 	if ($resp->is_success) {
-		my $message = $resp->decoded_content;
-		print $message;
+		my $payload = decode_json($resp->decoded_content);
+
+		if ($payload->{'ok'}) {
+			@users_list = @{$payload->{'members'}};
+			store \@users_list, users_list_cache;
+		}
+		else {
+			Irssi::print("Error from the Slack API: $payload->{'error'}");
+			die 'Unable to retrieve users from the Slack API';
+		}
 	}
 	else {
-		print $resp->code . "\n";
-		print $resp->message . "\n";
+		Irssi::print("Error calling the Slack API: ($resp->code) $resp->message");
+		die 'Unable to communicate with the Slack API';
 	}
 }
 
@@ -50,8 +65,11 @@ sub find_user {
 	my ($username) = @_;
 
 	if (!@users_list) {
-		my $file = 'users.list.plstore';
-		@users_list = retrieve($file);
+		if (!-s users_list_cache) {
+			fetch_users_list();
+		}
+
+		@users_list = retrieve(users_list_cache);
 	}
 
 	for my $user (@{@users_list[0]}) {
