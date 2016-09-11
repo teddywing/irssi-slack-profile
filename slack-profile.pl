@@ -61,7 +61,7 @@ sub find_user {
 }
 
 sub swhois {
-	my ($data, $server, $window_item) = @_;
+	my ($username, $server, $window_item) = @_;
 
 	# if (!$server || !$server->{connected}) {
 	# 	Irssi::print("Not connected to server");
@@ -76,11 +76,11 @@ sub swhois {
 		}
 	}
 
-	if ($data) {
-		# If $data starts with @, strip it
-		$data =~ s/^@//;
+	if ($username) {
+		# If $username starts with @, strip it
+		$username =~ s/^@//;
 
-		if (my $user = find_user($data)) {
+		if (my $user = find_user($username)) {
 			my $bot = '';
 
 			if ($user->{'is_bot'}) {
