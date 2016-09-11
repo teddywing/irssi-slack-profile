@@ -72,8 +72,6 @@ sub swhois {
 		# If $data starts with @, strip it
 		$data =~ s/^@//;
 
-		# my $user = find_user($data);
-
 		if (my $user = find_user($data)) {
 			Irssi::print($user->{'real_name'});
 		}
