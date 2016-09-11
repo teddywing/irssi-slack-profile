@@ -73,7 +73,13 @@ sub swhois {
 		$data =~ s/^@//;
 
 		if (my $user = find_user($data)) {
-			Irssi::print($user->{'name'});
+			my $bot = '';
+
+			if ($user->{'is_bot'}) {
+				$bot = ' (bot)';
+			}
+
+			Irssi::print($user->{'name'} . $bot);
 			Irssi::print('  name  : ' . $user->{'real_name'});
 			Irssi::print('  title : ' . $user->{'profile'}->{'title'});
 			Irssi::print('  email : ' . $user->{'profile'}->{'email'});
