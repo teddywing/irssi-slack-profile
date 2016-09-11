@@ -5,8 +5,7 @@ use 5.010;
 use Data::Dumper;
 
 use JSON;
-use LWP::UserAgent;
-use HTTP::Request::Common;
+use HTTP::Tiny;
 use Mozilla::CA;
 use Storable;
 use URI;
@@ -30,21 +29,20 @@ sub users_list_cache {
 }
 
 sub fetch_users_list {
-	my $ua = LWP::UserAgent->new;
-	$ua->agent('Mozilla/5.0');
-
 	my $token = Irssi::settings_get_str('slack_profile_token');
 	my $url = URI->new('https://slack.com/api/users.list');
 	$url->query_form(token => $token);
 
-	my $req = HTTP::Request->new(GET => $url);
+	my $http = HTTP::Tiny->new(
+		default_headers => {
+			'content-type' => 'application/json',
+		},
+		verify_SSL => 1,
+	);
+	my $resp = $http->get($url);
 
-	$req->header('content-type' => 'application/json');
-
-	my $resp = $ua->request($req);
-
-	if ($resp->is_success) {
-		my $payload = decode_json($resp->decoded_content);
+	if ($resp->{'success'}) {
+		my $payload = decode_json($resp->{'content'});
 
 		if ($payload->{'ok'}) {
 			@users_list = @{$payload->{'members'}};
@@ -56,7 +54,7 @@ sub fetch_users_list {
 		}
 	}
 	else {
-		Irssi::print("Error calling the Slack API: ($resp->code) $resp->message");
+		Irssi::print("Error calling the Slack API: ($resp->{'status'}) $resp->{'reason'} | $resp->{'content'}");
 		die 'Unable to communicate with the Slack API';
 	}
 }
