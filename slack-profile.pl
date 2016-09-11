@@ -93,6 +93,7 @@ sub swhois {
 			maybe_print_field('email', $user->{'profile'}->{'email'});
 			maybe_print_field('phone', $user->{'profile'}->{'phone'});
 			maybe_print_field('skype', $user->{'profile'}->{'skype'});
+			maybe_print_field('tz   ', $user->{'tz_label'});
 
 			Irssi::print('End of SWHOIS');
 		}
