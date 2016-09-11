@@ -54,3 +54,28 @@ sub find_user {
 		}
 	}
 }
+
+sub swhois {
+	my ($data, $server, $window_item) = @_;
+
+	# if (!$server || !$server->{connected}) {
+	# 	Irssi::print("Not connected to server");
+	# 	return;
+	# }
+
+	if ($data) {
+		# If $data starts with @, strip it
+		$data =~ s/^@//;
+
+		# my $user = find_user($data);
+
+		if (my $user = find_user($data)) {
+			Irssi::print($user->{'real_name'});
+		}
+	}
+	else {
+		# find_user(current user nick);
+	}
+}
+
+Irssi::command_bind('swhois', 'swhois');
