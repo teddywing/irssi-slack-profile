@@ -73,7 +73,20 @@ sub swhois {
 		$data =~ s/^@//;
 
 		if (my $user = find_user($data)) {
-			Irssi::print($user->{'real_name'});
+			Irssi::print($user->{'name'});
+			Irssi::print('  name  : ' . $user->{'real_name'});
+			Irssi::print('  title : ' . $user->{'profile'}->{'title'});
+			Irssi::print('  email : ' . $user->{'profile'}->{'email'});
+
+			if ($user->{'profile'}->{'phone'}) {
+				Irssi::print('  phone : ' . $user->{'profile'}->{'phone'});
+			}
+
+			if ($user->{'profile'}->{'skype'}) {
+				Irssi::print('  skype : ' . $user->{'profile'}->{'skype'});
+			}
+
+			Irssi::print('End of SWHOIS');
 		}
 	}
 	else {
