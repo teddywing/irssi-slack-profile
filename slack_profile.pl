@@ -191,28 +191,26 @@ sub print_whois {
 sub swhois {
 	my ($username, $server, $window_item) = @_;
 
-	if ($username) {
-		# If $username starts with @, strip it
-		$username =~ s/^@//;
-
-		if (my $user = find_user($username)) {
-			my $profile = fetch_user_profile($user);
-			foreach my $key (keys %{$profile->{'fields'}}) {
-				my $label = $profile->{'fields'}->{$key}->{'label'};
-				my $value = $profile->{'fields'}->{$key}->{'value'};
-				$user->{$label} = $value;
-			}
-
-			print_whois($user);
-		}
-	}
-	else {
+	if (!$username) {
 		if (!$server || !$server->{connected}) {
 			Irssi::print("Not connected to server");
 			return;
 		}
 
-		my $user = find_user($server->{'nick'});
+		$username = $server->{'nick'};
+	}
+
+	# If $username starts with @, strip it
+	$username =~ s/^@//;
+
+	if (my $user = find_user($username)) {
+		my $profile = fetch_user_profile($user);
+		foreach my $key (keys %{$profile->{'fields'}}) {
+			my $label = $profile->{'fields'}->{$key}->{'label'};
+			my $value = $profile->{'fields'}->{$key}->{'value'};
+			$user->{$label} = $value;
+		}
+
 		print_whois($user);
 	}
 }
