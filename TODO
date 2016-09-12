@@ -1,0 +1,18 @@
+TODO
+
+v Fetch users list from Slack API
+v Store users list in a file, within the Irssi directory
+v When `find_user` is called, if we can't find the users list file, fetch the list
+- When `find_user` can't find the requested user, re-fetch the users list
+v Add a setting to allow users to set their Slack token
+v Calling /swhois without an argument should return information on the current nick
+v Notify the user that fetching the users list is going to take a while
+v Add in-place help
+
+
+v2:
+- Get presence information on the requested user
+- Get the requested user's GitHub URL and Gigster Karma fields (needs users.profile API)
+
+v3:
+- Add a command to set/change the current user's profile fields
