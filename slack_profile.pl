@@ -80,7 +80,7 @@ HELP
 }
 
 sub users_list_cache {
-	Irssi::get_irssi_dir() . '/scripts/users.list.plstore';
+	Irssi::get_irssi_dir() . '/scripts/slack_profile-users.list.plstore';
 }
 
 sub fetch_users_list {
