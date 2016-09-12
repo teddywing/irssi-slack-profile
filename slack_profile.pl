@@ -90,9 +90,11 @@ sub slack_api {
 		'Set it with `/set slack_profile_token TOKEN`.' if !$token;
 
 	my ($method, $args) = @_;
+	$args ||= {};
+	$args->{'token'} = $token;
 
 	my $url = URI->new("https://slack.com/api/$method");
-	$url->query_form(token => $token);
+	$url->query_form($args);
 
 	my $http = HTTP::Tiny->new(
 		default_headers => {
