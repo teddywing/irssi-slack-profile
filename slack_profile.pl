@@ -182,8 +182,13 @@ sub print_whois {
 	maybe_print_field('phone', $user->{'profile'}->{'phone'});
 	maybe_print_field('skype', $user->{'profile'}->{'skype'});
 	maybe_print_field('tz   ', $user->{'tz_label'});
-	maybe_print_field('gh   ', $user->{'GitHub'});
-	maybe_print_field('karma', $user->{'Karma'});
+
+	foreach my $key (keys %{$user->{'fields'}}) {
+		my $label = $user->{'fields'}->{$key}->{'label'};
+		my $value = $user->{'fields'}->{$key}->{'value'};
+
+		maybe_print_field($label, $value);
+	}
 
 	Irssi::print('End of SWHOIS');
 }
@@ -205,11 +210,7 @@ sub swhois {
 
 	if (my $user = find_user($username)) {
 		my $profile = fetch_user_profile($user);
-		foreach my $key (keys %{$profile->{'fields'}}) {
-			my $label = $profile->{'fields'}->{$key}->{'label'};
-			my $value = $profile->{'fields'}->{$key}->{'value'};
-			$user->{$label} = $value;
-		}
+		$user->{'fields'} = $profile->{'fields'};
 
 		print_whois($user);
 	}
