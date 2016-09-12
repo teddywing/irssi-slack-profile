@@ -56,9 +56,9 @@ my @users_list;
 
 sub help {
 	my ($args) = @_;
+	return unless $args =~ /^swhois\s*$/;
 
-	if ($args =~ /^swhois\s*$/) {
-		my $help = <<HELP;
+	my $help = <<HELP;
 %9Syntax:%9
 
 SWHOIS [<nick>]
@@ -75,9 +75,8 @@ SWHOIS [<nick>]
     /SWHOIS \@farnsworth
 HELP
 
-		Irssi::print($help, MSGLEVEL_CLIENTCRAP);
-		Irssi::signal_stop();
-	}
+	Irssi::print($help, MSGLEVEL_CLIENTCRAP);
+	Irssi::signal_stop();
 }
 
 sub users_list_cache {
