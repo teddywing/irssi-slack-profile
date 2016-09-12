@@ -1,3 +1,19 @@
+# slack_profile.pl
+#
+# Get user profile information from the Slack API.
+#
+# Note:
+# Before using this script, a Slack API token must be added:
+#
+#     /set slack_profile_token TOKEN
+#
+# Tokens can be created here: https://api.slack.com/docs/oauth-test-tokens
+#
+# Usage:
+#
+#     /swhois nick
+#     /swhois @nick
+
 use strict;
 
 use 5.010;
