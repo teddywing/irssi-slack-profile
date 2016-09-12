@@ -29,9 +29,13 @@ sub users_list_cache {
 }
 
 sub fetch_users_list {
+	my $token = Irssi::settings_get_str('slack_profile_token');
+	die 'Requires a Slack API token. Generate one from ' .
+		'https://api.slack.com/docs/oauth-test-tokens. ' .
+		'Set it with `/set slack_profile_token TOKEN`.' if !$token;
+
 	Irssi::print('Fetching users list from Slack. This could take a while...');
 
-	my $token = Irssi::settings_get_str('slack_profile_token');
 	my $url = URI->new('https://slack.com/api/users.list');
 	$url->query_form(token => $token);
 
