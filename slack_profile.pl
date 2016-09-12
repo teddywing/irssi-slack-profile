@@ -54,6 +54,32 @@ $VERSION = '1.00';
 
 my @users_list;
 
+sub help {
+	my ($args) = @_;
+
+	if ($args =~ /^swhois\s*$/) {
+		my $help = <<HELP;
+%9Syntax:%9
+
+SWHOIS [<nick>]
+
+%9Description:%9
+
+    Displays WHOIS-style profile information from Slack for the given nick. If
+    no nick argument is provided, the current nick is used.
+
+%9Examples:%9
+
+    /SWHOIS
+    /SWHOIS farnsworth
+    /SWHOIS \@farnsworth
+HELP
+
+		Irssi::print($help, MSGLEVEL_CLIENTCRAP);
+		Irssi::signal_stop();
+	}
+}
+
 sub users_list_cache {
 	Irssi::get_irssi_dir() . '/scripts/users.list.plstore';
 }
@@ -164,5 +190,6 @@ sub swhois {
 }
 
 Irssi::command_bind('swhois', 'swhois');
+Irssi::command_bind('help', 'help');
 
 Irssi::settings_add_str('slack_profile', 'slack_profile_token', '');
