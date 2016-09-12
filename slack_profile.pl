@@ -129,6 +129,17 @@ sub fetch_users_list {
 	store \@users_list, users_list_cache;
 }
 
+sub fetch_user_profile {
+	my ($user) = @_;
+
+	my $resp = slack_api('users.profile.get', {
+		user => $user->{'id'},
+		include_labels => 1
+	});
+
+	return $resp->{'profile'};
+}
+
 sub find_user {
 	my ($username) = @_;
 
@@ -171,6 +182,8 @@ sub print_whois {
 	maybe_print_field('phone', $user->{'profile'}->{'phone'});
 	maybe_print_field('skype', $user->{'profile'}->{'skype'});
 	maybe_print_field('tz   ', $user->{'tz_label'});
+	maybe_print_field('gh   ', $user->{'GitHub'});
+	maybe_print_field('karma', $user->{'Karma'});
 
 	Irssi::print('End of SWHOIS');
 }
@@ -183,6 +196,13 @@ sub swhois {
 		$username =~ s/^@//;
 
 		if (my $user = find_user($username)) {
+			my $profile = fetch_user_profile($user);
+			foreach my $key (keys %{$profile->{'fields'}}) {
+				my $label = $profile->{'fields'}->{$key}->{'label'};
+				my $value = $profile->{'fields'}->{$key}->{'value'};
+				$user->{$label} = $value;
+			}
+
 			print_whois($user);
 		}
 	}
