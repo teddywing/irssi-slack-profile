@@ -112,19 +112,19 @@ sub slack_api {
 		}
 		else {
 			Irssi::print("Error from the Slack API: $payload->{'error'}");
-			die 'Unable to retrieve data from the Slack API';
 		}
 	}
 	else {
 		Irssi::print("Error calling the Slack API: ($resp->{'status'}) $resp->{'reason'} | $resp->{'content'}");
-		die 'Unable to communicate with the Slack API';
 	}
 }
 
 sub fetch_users_list {
 	Irssi::print('Fetching users list from Slack. This could take a while...');
 
-	my $resp = slack_api('users.list');
+	my $resp = slack_api('users.list') or
+		die 'Unable to retrieve users from the Slack API';
+
 	@users_list = @{$resp->{'members'}};
 	store \@users_list, users_list_cache;
 }
