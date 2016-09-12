@@ -80,10 +80,10 @@ sub find_user {
 sub swhois {
 	my ($username, $server, $window_item) = @_;
 
-	# if (!$server || !$server->{connected}) {
-	# 	Irssi::print("Not connected to server");
-	# 	return;
-	# }
+	if (!$server || !$server->{connected}) {
+		Irssi::print("Not connected to server");
+		return;
+	}
 
 	sub maybe_print_field {
 		my ($name, $value) = @_;
