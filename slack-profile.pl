@@ -77,13 +77,8 @@ sub find_user {
 	}
 }
 
-sub swhois {
-	my ($username, $server, $window_item) = @_;
-
-	if (!$server || !$server->{connected}) {
-		Irssi::print("Not connected to server");
-		return;
-	}
+sub print_whois {
+	my ($user) = @_;
 
 	sub maybe_print_field {
 		my ($name, $value) = @_;
@@ -93,30 +88,42 @@ sub swhois {
 		}
 	}
 
+	my $bot = '';
+
+	if ($user->{'is_bot'}) {
+		$bot = ' (bot)';
+	}
+
+	Irssi::print($user->{'name'} . $bot);
+	maybe_print_field('name ', $user->{'real_name'});
+	maybe_print_field('title', $user->{'profile'}->{'title'});
+	maybe_print_field('email', $user->{'profile'}->{'email'});
+	maybe_print_field('phone', $user->{'profile'}->{'phone'});
+	maybe_print_field('skype', $user->{'profile'}->{'skype'});
+	maybe_print_field('tz   ', $user->{'tz_label'});
+
+	Irssi::print('End of SWHOIS');
+}
+
+sub swhois {
+	my ($username, $server, $window_item) = @_;
+
+	if (!$server || !$server->{connected}) {
+		Irssi::print("Not connected to server");
+		return;
+	}
+
 	if ($username) {
 		# If $username starts with @, strip it
 		$username =~ s/^@//;
 
 		if (my $user = find_user($username)) {
-			my $bot = '';
-
-			if ($user->{'is_bot'}) {
-				$bot = ' (bot)';
-			}
-
-			Irssi::print($user->{'name'} . $bot);
-			maybe_print_field('name ', $user->{'real_name'});
-			maybe_print_field('title', $user->{'profile'}->{'title'});
-			maybe_print_field('email', $user->{'profile'}->{'email'});
-			maybe_print_field('phone', $user->{'profile'}->{'phone'});
-			maybe_print_field('skype', $user->{'profile'}->{'skype'});
-			maybe_print_field('tz   ', $user->{'tz_label'});
-
-			Irssi::print('End of SWHOIS');
+			print_whois($user);
 		}
 	}
 	else {
-		# find_user(current user nick);
+		my $user = find_user($server->{'nick'});
+		print_whois($user);
 	}
 }
 
