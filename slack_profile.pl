@@ -83,15 +83,15 @@ sub users_list_cache {
 	Irssi::get_irssi_dir() . '/scripts/slack_profile-users.list.plstore';
 }
 
-sub fetch_users_list {
+sub slack_api {
 	my $token = Irssi::settings_get_str('slack_profile_token');
 	die 'Requires a Slack API token. Generate one from ' .
 		'https://api.slack.com/docs/oauth-test-tokens. ' .
 		'Set it with `/set slack_profile_token TOKEN`.' if !$token;
 
-	Irssi::print('Fetching users list from Slack. This could take a while...');
+	my ($method, $args) = @_;
 
-	my $url = URI->new('https://slack.com/api/users.list');
+	my $url = URI->new("https://slack.com/api/$method");
 	$url->query_form(token => $token);
 
 	my $http = HTTP::Tiny->new(
@@ -106,18 +106,25 @@ sub fetch_users_list {
 		my $payload = decode_json($resp->{'content'});
 
 		if ($payload->{'ok'}) {
-			@users_list = @{$payload->{'members'}};
-			store \@users_list, users_list_cache;
+			return $payload;
 		}
 		else {
 			Irssi::print("Error from the Slack API: $payload->{'error'}");
-			die 'Unable to retrieve users from the Slack API';
+			die 'Unable to retrieve data from the Slack API';
 		}
 	}
 	else {
 		Irssi::print("Error calling the Slack API: ($resp->{'status'}) $resp->{'reason'} | $resp->{'content'}");
 		die 'Unable to communicate with the Slack API';
 	}
+}
+
+sub fetch_users_list {
+	Irssi::print('Fetching users list from Slack. This could take a while...');
+
+	my $resp = slack_api('users.list');
+	@users_list = @{$resp->{'members'}};
+	store \@users_list, users_list_cache;
 }
 
 sub find_user {
