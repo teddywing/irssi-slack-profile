@@ -169,11 +169,6 @@ sub print_whois {
 sub swhois {
 	my ($username, $server, $window_item) = @_;
 
-	if (!$server || !$server->{connected}) {
-		Irssi::print("Not connected to server");
-		return;
-	}
-
 	if ($username) {
 		# If $username starts with @, strip it
 		$username =~ s/^@//;
@@ -183,6 +178,11 @@ sub swhois {
 		}
 	}
 	else {
+		if (!$server || !$server->{connected}) {
+			Irssi::print("Not connected to server");
+			return;
+		}
+
 		my $user = find_user($server->{'nick'});
 		print_whois($user);
 	}
