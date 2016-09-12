@@ -29,6 +29,8 @@ sub users_list_cache {
 }
 
 sub fetch_users_list {
+	Irssi::print('Fetching users list from Slack. This could take a while...');
+
 	my $token = Irssi::settings_get_str('slack_profile_token');
 	my $url = URI->new('https://slack.com/api/users.list');
 	$url->query_form(token => $token);
