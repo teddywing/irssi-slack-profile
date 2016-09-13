@@ -11,7 +11,7 @@ v Add in-place help
 
 
 v2:
-- Get presence information on the requested user
+v Get presence information on the requested user
 v Get the requested user's GitHub URL and Gigster Karma fields (needs users.profile API)
 
 v3:
