@@ -129,6 +129,12 @@ sub fetch_users_list {
 	store \@users_list, users_list_cache;
 }
 
+# Re-fetch the users list for the most up-to-date information
+sub sync {
+	fetch_users_list();
+	Irssi::print('Done.');
+}
+
 sub fetch_user_profile {
 	my ($user) = @_;
 
@@ -232,6 +238,11 @@ sub swhois {
 }
 
 Irssi::command_bind('swhois', 'swhois');
+
+Irssi::command_bind('slack_profile', 'sync');
+Irssi::command_bind('slack_profile sync', 'sync');
+
 Irssi::command_bind('help', 'help');
+
 
 Irssi::settings_add_str('slack_profile', 'slack_profile_token', '');
