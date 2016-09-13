@@ -156,6 +156,22 @@ sub fetch_user_presence {
 	return $resp->{'presence'};
 }
 
+sub update_user_profile {
+	my ($key, $value) = @_;
+
+	my $user = find_user($server->{'nick'});
+
+# Normalize labels s/ /_/g and lowercase
+# if $key is not a key in $user, then look for it in $user{fields}
+#    then set 'name' to the id of the custom field
+
+	my $resp = slack_api('users.profile.set', {
+		user => $user->{'id'},
+		name => $key,
+		value => $value,
+	});
+}
+
 sub find_user {
 	my ($username) = @_;
 
