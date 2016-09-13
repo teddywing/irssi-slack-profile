@@ -140,6 +140,16 @@ sub fetch_user_profile {
 	return $resp->{'profile'};
 }
 
+sub fetch_user_presence {
+	my ($user) = @_;
+
+	my $resp = slack_api('users.getPresence', {
+		user => $user->{'id'}
+	});
+
+	return $resp->{'presence'};
+}
+
 sub find_user {
 	my ($username) = @_;
 
@@ -190,6 +200,8 @@ sub print_whois {
 		maybe_print_field($label, $value);
 	}
 
+	maybe_print_field('status', $user->{'presence'});
+
 	Irssi::print('End of SWHOIS');
 }
 
@@ -211,6 +223,9 @@ sub swhois {
 	if (my $user = find_user($username)) {
 		my $profile = fetch_user_profile($user);
 		$user->{'fields'} = $profile->{'fields'};
+
+		my $presence = fetch_user_presence($user);
+		$user->{'presence'} = $presence;
 
 		print_whois($user);
 	}
