@@ -83,16 +83,18 @@ sub users_list_cache {
 	Irssi::get_irssi_dir() . '/scripts/slack_profile-users.list.plstore';
 }
 
-sub fetch_users_list {
+sub slack_api {
 	my $token = Irssi::settings_get_str('slack_profile_token');
 	die 'Requires a Slack API token. Generate one from ' .
 		'https://api.slack.com/docs/oauth-test-tokens. ' .
 		'Set it with `/set slack_profile_token TOKEN`.' if !$token;
 
-	Irssi::print('Fetching users list from Slack. This could take a while...');
+	my ($method, $args) = @_;
+	$args ||= {};
+	$args->{'token'} = $token;
 
-	my $url = URI->new('https://slack.com/api/users.list');
-	$url->query_form(token => $token);
+	my $url = URI->new("https://slack.com/api/$method");
+	$url->query_form($args);
 
 	my $http = HTTP::Tiny->new(
 		default_headers => {
@@ -106,18 +108,46 @@ sub fetch_users_list {
 		my $payload = decode_json($resp->{'content'});
 
 		if ($payload->{'ok'}) {
-			@users_list = @{$payload->{'members'}};
-			store \@users_list, users_list_cache;
+			return $payload;
 		}
 		else {
 			Irssi::print("Error from the Slack API: $payload->{'error'}");
-			die 'Unable to retrieve users from the Slack API';
 		}
 	}
 	else {
 		Irssi::print("Error calling the Slack API: ($resp->{'status'}) $resp->{'reason'} | $resp->{'content'}");
-		die 'Unable to communicate with the Slack API';
 	}
+}
+
+sub fetch_users_list {
+	Irssi::print('Fetching users list from Slack. This could take a while...');
+
+	my $resp = slack_api('users.list') or
+		die 'Unable to retrieve users from the Slack API';
+
+	@users_list = @{$resp->{'members'}};
+	store \@users_list, users_list_cache;
+}
+
+sub fetch_user_profile {
+	my ($user) = @_;
+
+	my $resp = slack_api('users.profile.get', {
+		user => $user->{'id'},
+		include_labels => 1
+	});
+
+	return $resp->{'profile'};
+}
+
+sub fetch_user_presence {
+	my ($user) = @_;
+
+	my $resp = slack_api('users.getPresence', {
+		user => $user->{'id'}
+	});
+
+	return $resp->{'presence'};
 }
 
 sub find_user {
@@ -163,27 +193,40 @@ sub print_whois {
 	maybe_print_field('skype', $user->{'profile'}->{'skype'});
 	maybe_print_field('tz   ', $user->{'tz_label'});
 
+	foreach my $key (keys %{$user->{'fields'}}) {
+		my $label = $user->{'fields'}->{$key}->{'label'};
+		my $value = $user->{'fields'}->{$key}->{'value'};
+
+		maybe_print_field($label, $value);
+	}
+
+	maybe_print_field('status', $user->{'presence'});
+
 	Irssi::print('End of SWHOIS');
 }
 
 sub swhois {
 	my ($username, $server, $window_item) = @_;
 
-	if ($username) {
-		# If $username starts with @, strip it
-		$username =~ s/^@//;
-
-		if (my $user = find_user($username)) {
-			print_whois($user);
-		}
-	}
-	else {
+	if (!$username) {
 		if (!$server || !$server->{connected}) {
 			Irssi::print("Not connected to server");
 			return;
 		}
 
-		my $user = find_user($server->{'nick'});
+		$username = $server->{'nick'};
+	}
+
+	# If $username starts with @, strip it
+	$username =~ s/^@//;
+
+	if (my $user = find_user($username)) {
+		my $profile = fetch_user_profile($user);
+		$user->{'fields'} = $profile->{'fields'};
+
+		my $presence = fetch_user_presence($user);
+		$user->{'presence'} = $presence;
+
 		print_whois($user);
 	}
 }
