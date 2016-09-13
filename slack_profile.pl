@@ -156,6 +156,16 @@ sub fetch_user_presence {
 	return $resp->{'presence'};
 }
 
+sub underscorize {
+	my ($string) = @_;
+
+	my $result = lc $string;
+	$result =~ s/ /_/g;
+	$result =~ s/[^a-z_]//g;
+
+	return $result;
+}
+
 sub update_user_profile {
 	my ($key, $value) = @_;
 
