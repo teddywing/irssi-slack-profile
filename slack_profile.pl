@@ -246,11 +246,15 @@ sub find_user {
 
 	for my $user (@users_list) {
 		if ($user->{'name'} eq $username) {
-			my $profile = fetch_user_profile($user);
-			$user->{'fields'} = $profile->{'fields'};
+			unless (exists $user->{'fields'}) {
+				my $profile = fetch_user_profile($user);
+				$user->{'fields'} = $profile->{'fields'};
+			}
 
-			my $presence = fetch_user_presence($user);
-			$user->{'presence'} = $presence;
+			unless (exists $user->{'presence'}) {
+				my $presence = fetch_user_presence($user);
+				$user->{'presence'} = $presence;
+			}
 
 			return $user;
 		}
