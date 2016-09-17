@@ -197,6 +197,13 @@ sub update_user_profile {
 	});
 }
 
+sub cmd_set {
+	my ($data, $server, $window_item) = @_;
+	my ($key, $value) = split /\s+/, $data, 2;
+
+	update_user_profile($key, $value);
+}
+
 sub find_user {
 	my ($username) = @_;
 
@@ -280,8 +287,8 @@ sub swhois {
 
 Irssi::command_bind('swhois', 'swhois');
 
-Irssi::command_bind('slack_profile', 'sync');
-Irssi::command_bind('slack_profile sync', 'sync');
+Irssi::command_bind('slack_profile_sync', 'sync');
+Irssi::command_bind('slack_profile_set', 'cmd_set');
 
 Irssi::command_bind('help', 'help');
 
