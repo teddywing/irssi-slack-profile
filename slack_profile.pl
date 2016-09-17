@@ -174,6 +174,12 @@ sub complete_profile_field {
 
 	my @profile_fields = qw(first_name last_name email phone skype title);
 
+	my $user = find_user($server->{'nick'});
+
+	for my $custom_field (keys %{$user->{'fields'}}) {
+		push @profile_fields, underscorize($user->{'fields'}->{$custom_field}->{'label'});
+	}
+
 	if ($word ne '') {
 		for my $field (@profile_fields) {
 			if ($field =~ /^\Q${word}\E/i) {
@@ -239,6 +245,12 @@ sub find_user {
 
 	for my $user (@users_list) {
 		if ($user->{'name'} eq $username) {
+			my $profile = fetch_user_profile($user);
+			$user->{'fields'} = $profile->{'fields'};
+
+			my $presence = fetch_user_presence($user);
+			$user->{'presence'} = $presence;
+
 			return $user;
 		}
 	}
@@ -297,12 +309,6 @@ sub swhois {
 	$username =~ s/^@//;
 
 	if (my $user = find_user($username)) {
-		my $profile = fetch_user_profile($user);
-		$user->{'fields'} = $profile->{'fields'};
-
-		my $presence = fetch_user_presence($user);
-		$user->{'presence'} = $presence;
-
 		print_whois($user);
 	}
 }
