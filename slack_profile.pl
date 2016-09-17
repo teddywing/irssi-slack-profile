@@ -174,10 +174,12 @@ sub complete_profile_field {
 
 	my @profile_fields = qw(first_name last_name email phone skype title);
 
-	my $user = find_user($server->{'nick'});
+	if ($window->{'active_server'}) {
+		my $user = find_user($window->{'active_server'}->{'nick'});
 
-	for my $custom_field (keys %{$user->{'fields'}}) {
-		push @profile_fields, underscorize($user->{'fields'}->{$custom_field}->{'label'});
+		for my $custom_field (keys %{$user->{'fields'}}) {
+			push @profile_fields, underscorize($user->{'fields'}->{$custom_field}->{'label'});
+		}
 	}
 
 	if ($word ne '') {
