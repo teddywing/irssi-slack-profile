@@ -219,7 +219,9 @@ sub cmd_set {
 	my ($data) = @_;
 	my ($key, $value) = split /\s+/, $data, 2;
 
-	update_user_profile($key, $value);
+	if ($key) {
+		update_user_profile($key, $value);
+	}
 }
 
 sub find_user {
