@@ -195,9 +195,9 @@ sub complete_profile_field {
 }
 
 sub update_user_profile {
-	my ($key, $value) = @_;
+	my ($nick, $key, $value) = @_;
 
-	my $user = find_user($server->{'nick'});
+	my $user = find_user($nick);
 
 	my @profile_fields = qw(first_name last_name email phone skype title);
 
@@ -222,11 +222,12 @@ sub update_user_profile {
 }
 
 sub cmd_set {
-	my ($data) = @_;
+	my ($data, $server) = @_;
 	my ($key, $value) = split /\s+/, $data, 2;
+	my $nick = $server->{'nick'};
 
 	if ($key) {
-		update_user_profile($key, $value);
+		update_user_profile($nick, $key, $value);
 	}
 }
 
