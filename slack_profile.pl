@@ -207,11 +207,13 @@ sub find_user {
 		if (!-s users_list_cache) {
 			fetch_users_list();
 		}
-
-		@users_list = retrieve(users_list_cache);
+		else {
+			@users_list = retrieve(users_list_cache);
+			@users_list = @{@users_list[0]};
+		}
 	}
 
-	for my $user (@{@users_list[0]}) {
+	for my $user (@users_list) {
 		if ($user->{'name'} eq $username) {
 			return $user;
 		}
