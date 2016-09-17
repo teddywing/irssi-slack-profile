@@ -172,12 +172,7 @@ sub complete_profile_field {
 
 	return unless $linestart =~ /^\Q${slash}\Eslack_profile_set\b/i;
 
-	my @profile_fields = qw(first_name last_name email phone skype title);
-	@$complist = ();
-
-	for my $field (@profile_fields) {
-		push @$complist, $field;
-	}
+	@$complist = qw(first_name last_name email phone skype title);
 
 	Irssi::signal_stop();
 }
