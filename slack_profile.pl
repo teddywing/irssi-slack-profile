@@ -198,7 +198,7 @@ sub update_user_profile {
 }
 
 sub cmd_set {
-	my ($data, $server, $window_item) = @_;
+	my ($data) = @_;
 	my ($key, $value) = split /\s+/, $data, 2;
 
 	update_user_profile($key, $value);
