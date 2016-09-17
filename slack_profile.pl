@@ -156,6 +156,50 @@ sub fetch_user_presence {
 	return $resp->{'presence'};
 }
 
+sub underscorize {
+	my ($string) = @_;
+
+	my $result = lc $string;
+	$result =~ s/ /_/g;
+	$result =~ s/[^a-z_]//g;
+
+	return $result;
+}
+
+sub update_user_profile {
+	my ($key, $value) = @_;
+
+	my $user = find_user($server->{'nick'});
+
+	my @profile_fields = qw(first_name last_name email phone skype title);
+
+	# If $key is a custom field, find the custom field's id and use
+	# that as the key instead.
+	unless ($key ~~ @profile_fields) {
+		# Find key in custom field labels
+		for my $custom_field (keys %{$user->{'fields'}}) {
+			if (underscorize($user->{'fields'}->{$custom_field}->{'label'})
+				eq $key) {
+				$key = $custom_field;
+				last;
+			}
+		}
+	}
+
+	my $resp = slack_api('users.profile.set', {
+		user => $user->{'id'},
+		name => $key,
+		value => $value,
+	});
+}
+
+sub cmd_set {
+	my ($data) = @_;
+	my ($key, $value) = split /\s+/, $data, 2;
+
+	update_user_profile($key, $value);
+}
+
 sub find_user {
 	my ($username) = @_;
 
@@ -239,8 +283,8 @@ sub swhois {
 
 Irssi::command_bind('swhois', 'swhois');
 
-Irssi::command_bind('slack_profile', 'sync');
-Irssi::command_bind('slack_profile sync', 'sync');
+Irssi::command_bind('slack_profile_sync', 'sync');
+Irssi::command_bind('slack_profile_set', 'cmd_set');
 
 Irssi::command_bind('help', 'help');
 
