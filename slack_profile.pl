@@ -166,10 +166,40 @@ sub underscorize {
 	return $result;
 }
 
-sub update_user_profile {
-	my ($key, $value) = @_;
+sub complete_profile_field {
+	my ($complist, $window, $word, $linestart, $want_space) = @_;
+	my $slash = Irssi::parse_special('$k');
 
-	my $user = find_user($server->{'nick'});
+	return unless $linestart =~ /^\Q${slash}\Eslack_profile_set\b/i;
+
+	my @profile_fields = qw(first_name last_name email phone skype title);
+
+	if ($window->{'active_server'}) {
+		my $user = find_user($window->{'active_server'}->{'nick'});
+
+		for my $custom_field (keys %{$user->{'fields'}}) {
+			push @profile_fields, underscorize($user->{'fields'}->{$custom_field}->{'label'});
+		}
+	}
+
+	if ($word ne '') {
+		for my $field (@profile_fields) {
+			if ($field =~ /^\Q${word}\E/i) {
+				push @$complist, $field;
+			}
+		}
+	}
+	else {
+		@$complist = @profile_fields;
+	}
+
+	Irssi::signal_stop();
+}
+
+sub update_user_profile {
+	my ($nick, $key, $value) = @_;
+
+	my $user = find_user($nick);
 
 	my @profile_fields = qw(first_name last_name email phone skype title);
 
@@ -194,10 +224,13 @@ sub update_user_profile {
 }
 
 sub cmd_set {
-	my ($data) = @_;
+	my ($data, $server) = @_;
 	my ($key, $value) = split /\s+/, $data, 2;
+	my $nick = $server->{'nick'};
 
-	update_user_profile($key, $value);
+	if ($key) {
+		update_user_profile($nick, $key, $value);
+	}
 }
 
 sub find_user {
@@ -215,6 +248,16 @@ sub find_user {
 
 	for my $user (@users_list) {
 		if ($user->{'name'} eq $username) {
+			unless (exists $user->{'fields'}) {
+				my $profile = fetch_user_profile($user);
+				$user->{'fields'} = $profile->{'fields'};
+			}
+
+			unless (exists $user->{'presence'}) {
+				my $presence = fetch_user_presence($user);
+				$user->{'presence'} = $presence;
+			}
+
 			return $user;
 		}
 	}
@@ -273,12 +316,6 @@ sub swhois {
 	$username =~ s/^@//;
 
 	if (my $user = find_user($username)) {
-		my $profile = fetch_user_profile($user);
-		$user->{'fields'} = $profile->{'fields'};
-
-		my $presence = fetch_user_presence($user);
-		$user->{'presence'} = $presence;
-
 		print_whois($user);
 	}
 }
@@ -289,6 +326,8 @@ Irssi::command_bind('slack_profile_sync', 'sync');
 Irssi::command_bind('slack_profile_set', 'cmd_set');
 
 Irssi::command_bind('help', 'help');
+
+Irssi::signal_add('complete word', 'complete_profile_field');
 
 
 Irssi::settings_add_str('slack_profile', 'slack_profile_token', '');
