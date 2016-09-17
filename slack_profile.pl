@@ -175,6 +175,21 @@ sub update_user_profile {
 # if $key is not a key in $user, then look for it in $user{fields}
 #    then set 'name' to the id of the custom field
 
+	my @profile_fields = qw(first_name last_name email phone skype title);
+
+	# If $key is a custom field, find the custom field's id and use
+	# that as the key instead.
+	unless ($key ~~ @profile_fields) {
+		# Find key in custom field labels
+		for my $custom_field (keys %{$user->{'fields'}}) {
+			if (underscorize($user->{'fields'}->{$custom_field}->{'label'})
+				eq $key) {
+				$key = $custom_field;
+				last;
+			}
+		}
+	}
+
 	my $resp = slack_api('users.profile.set', {
 		user => $user->{'id'},
 		name => $key,
