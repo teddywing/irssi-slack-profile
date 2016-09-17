@@ -171,10 +171,6 @@ sub update_user_profile {
 
 	my $user = find_user($server->{'nick'});
 
-# Normalize labels s/ /_/g and lowercase
-# if $key is not a key in $user, then look for it in $user{fields}
-#    then set 'name' to the id of the custom field
-
 	my @profile_fields = qw(first_name last_name email phone skype title);
 
 	# If $key is a custom field, find the custom field's id and use
