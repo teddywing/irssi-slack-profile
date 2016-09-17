@@ -166,6 +166,22 @@ sub underscorize {
 	return $result;
 }
 
+sub complete_profile_field {
+	my ($complist, $window, $word, $linestart, $want_space) = @_;
+	my $slash = Irssi::parse_special('$k');
+
+	return unless $linestart =~ /^\Q${slash}\Eslack_profile_set\b/i;
+
+	my @profile_fields = qw(first_name last_name email phone skype title);
+	@$complist = ();
+
+	for my $field (@profile_fields) {
+		push @$complist, $field;
+	}
+
+	Irssi::signal_stop();
+}
+
 sub update_user_profile {
 	my ($key, $value) = @_;
 
@@ -289,6 +305,8 @@ Irssi::command_bind('slack_profile_sync', 'sync');
 Irssi::command_bind('slack_profile_set', 'cmd_set');
 
 Irssi::command_bind('help', 'help');
+
+Irssi::signal_add('complete word', 'complete_profile_field');
 
 
 Irssi::settings_add_str('slack_profile', 'slack_profile_token', '');
