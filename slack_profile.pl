@@ -172,7 +172,18 @@ sub complete_profile_field {
 
 	return unless $linestart =~ /^\Q${slash}\Eslack_profile_set\b/i;
 
-	@$complist = qw(first_name last_name email phone skype title);
+	my @profile_fields = qw(first_name last_name email phone skype title);
+
+	if ($word ne '') {
+		for my $field (@profile_fields) {
+			if ($field =~ /^\Q${word}\E/i) {
+				push @$complist, $field;
+			}
+		}
+	}
+	else {
+		@$complist = @profile_fields;
+	}
 
 	Irssi::signal_stop();
 }
