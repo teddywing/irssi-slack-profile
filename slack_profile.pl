@@ -11,8 +11,18 @@
 #
 # Usage:
 #
+#   Get profile information for a given nick:
+#
 #     /swhois nick
 #     /swhois @nick
+#
+#   Get the latest user profile data from Slack:
+#
+#     /slack_profile_sync
+#
+#   Update your Slack profile fields:
+#
+#     /slack_profile_set last_name Farnsworth
 #
 # 
 # Copyright (c) 2016  Teddy Wing
