@@ -11,8 +11,18 @@
 #
 # Usage:
 #
+#   Get profile information for a given nick:
+#
 #     /swhois nick
 #     /swhois @nick
+#
+#   Get the latest user profile data from Slack:
+#
+#     /slack_profile_sync
+#
+#   Update your Slack profile fields:
+#
+#     /slack_profile_set last_name Farnsworth
 #
 # 
 # Copyright (c) 2016  Teddy Wing
@@ -52,13 +62,25 @@ $VERSION = '1.00';
 	license     => 'GPL',
 };
 
+# Keeps an in-memory collection of Slack team members and their profile info
 my @users_list;
 
+# Provides help for the commands provided by the script from within Irssi.
+#
+# Examples:
+#   /help swhois
+#   /help slack_profile_sync
+#   /help slack_profile_set
 sub help {
 	my ($args) = @_;
-	return unless $args =~ /^swhois\s*$/;
 
-	my $help = <<HELP;
+	my $is_helping = 0;
+	my $help = '';
+
+	if ($args =~ /^swhois\s*$/) {
+		$is_helping = 1;
+
+		$help = <<HELP;
 %9Syntax:%9
 
 SWHOIS [<nick>]
@@ -74,15 +96,59 @@ SWHOIS [<nick>]
     /SWHOIS farnsworth
     /SWHOIS \@farnsworth
 HELP
+	}
+	elsif ($args =~ /^slack_profile_sync\s*$/) {
+		$is_helping = 1;
 
-	Irssi::print($help, MSGLEVEL_CLIENTCRAP);
-	Irssi::signal_stop();
+		$help = <<HELP;
+%9Syntax:%9
+
+SLACK_PROFILE_SYNC
+
+%9Description:%9
+
+    Re-fetches the users list from Slack and updates the script's internal
+    cache with this copy. %9Note: this will block Irssi and take a while.%9
+
+%9Examples:%9
+
+    /SLACK_PROFILE_SYNC
+HELP
+	}
+	elsif ($args =~ /^slack_profile_set\s*$/) {
+		$is_helping = 1;
+
+		$help = <<HELP;
+%9Syntax:%9
+
+SLACK_PROFILE_SET <key> <value>
+
+%9Description:%9
+
+    Update the given Slack profile field for the current nick.
+
+%9Examples:%9
+
+    /SLACK_PROFILE_SET first_name Lisa
+HELP
+	}
+
+	if ($is_helping) {
+		Irssi::print($help, MSGLEVEL_CLIENTCRAP);
+		Irssi::signal_stop();
+	}
 }
 
+# The location of the on-disk cache where user profile data is stored
 sub users_list_cache {
 	Irssi::get_irssi_dir() . '/scripts/slack_profile-users.list.plstore';
 }
 
+# Call Slack API methods
+#
+# Requires a Slack API token to be added to the Irssi config. Take a Slack API
+# method and an optional hash of API arguments. If the request is successful,
+# the API response is returned.
 sub slack_api {
 	my $token = Irssi::settings_get_str('slack_profile_token');
 	die 'Requires a Slack API token. Generate one from ' .
@@ -119,6 +185,9 @@ sub slack_api {
 	}
 }
 
+# Requests the entire list of users on the Slack team
+#
+# Stores this list in memory in `@users_list` and in an on-disk cache file.
 sub fetch_users_list {
 	Irssi::print('Fetching users list from Slack. This could take a while...');
 
@@ -135,6 +204,11 @@ sub sync {
 	Irssi::print('Done.');
 }
 
+# Get profile data for a single user
+#
+# Takes a user object of the kind provided by the Slack 'users.list' API
+# method. The user's unique id is extracted from this object and sent to Slack's
+# profile API method in order to retrieve custom field values from the user.
 sub fetch_user_profile {
 	my ($user) = @_;
 
@@ -146,6 +220,10 @@ sub fetch_user_profile {
 	return $resp->{'profile'};
 }
 
+# Get presence information about a user
+#
+# Given a user, request Slack's presence API method to find out whether that
+# user is away or active/online.
 sub fetch_user_presence {
 	my ($user) = @_;
 
@@ -156,6 +234,16 @@ sub fetch_user_presence {
 	return $resp->{'presence'};
 }
 
+# Convert a given string to a key-friendly format
+#
+# Takes a string, lowercases it, removes non-alphabetic characters, and converts
+# spaces into underscores.
+#
+# Examples:
+#   is(
+#       underscorize("This isn't a key"),
+#       'this_isnt_a_key'
+#   )
 sub underscorize {
 	my ($string) = @_;
 
@@ -166,6 +254,12 @@ sub underscorize {
 	return $result;
 }
 
+# Completion for profile fields names
+#
+# When using the `slack_profile_set` command, allow the names of profile fields
+# to be tab completed. This allows users to browse the possible fields they can
+# update, frees them from having to type the full field name, and gives them
+# confidence that they're not misspelling a field name.
 sub complete_profile_field {
 	my ($complist, $window, $word, $linestart, $want_space) = @_;
 	my $slash = Irssi::parse_special('$k');
@@ -196,6 +290,10 @@ sub complete_profile_field {
 	Irssi::signal_stop();
 }
 
+# Update a profile field
+#
+# Given a string nick, a field name, and a value, set the profile field to the
+# given value for the specified user.
 sub update_user_profile {
 	my ($nick, $key, $value) = @_;
 
@@ -223,6 +321,10 @@ sub update_user_profile {
 	});
 }
 
+# Irssi command handler for updating profile fields
+#
+# Extracts the field name and value from Irssi command arguments, finds the
+# current user's nick, and offloads the actual work onto `update_user_profile`.
 sub cmd_set {
 	my ($data, $server) = @_;
 	my ($key, $value) = split /\s+/, $data, 2;
@@ -233,6 +335,12 @@ sub cmd_set {
 	}
 }
 
+# Given a nick, return a corresponding user object
+#
+# Looks for the given nick in the Slack users list. If a match is found, the
+# associated user object is returned. Additionally, custom profile fields and
+# presence information is requested and attached to the user object if not
+# already there.
 sub find_user {
 	my ($username) = @_;
 
@@ -263,11 +371,18 @@ sub find_user {
 	}
 }
 
+# Prints user profile information to the Irssi console
 sub print_whois {
 	my ($user) = @_;
 
 	# Append spaces to the end of $label such that the length of the result is
 	# equal to $length
+	#
+	# Examples:
+	#   is(
+	#       pad_label('name', 7),
+	#       'name   '
+	#   )
 	sub pad_label {
 		my ($label, $length) = @_;
 
@@ -344,6 +459,11 @@ sub print_whois {
 	Irssi::print('End of SWHOIS');
 }
 
+# Irssi command handler for getting profile information for a nick
+#
+# Given a nick, the associated profile information for that nick will be fetched
+# and printed to the Irssi console. If no nick is passed, profile information
+# for the current user's nick is printed.
 sub swhois {
 	my ($username, $server, $window_item) = @_;
 
