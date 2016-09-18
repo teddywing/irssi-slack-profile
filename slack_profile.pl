@@ -56,9 +56,14 @@ my @users_list;
 
 sub help {
 	my ($args) = @_;
-	return unless $args =~ /^swhois\s*$/;
 
-	my $help = <<HELP;
+	my $is_helping = 0;
+	my $help = '';
+
+	if ($args =~ /^swhois\s*$/) {
+		$is_helping = 1;
+
+		$help = <<HELP;
 %9Syntax:%9
 
 SWHOIS [<nick>]
@@ -74,9 +79,47 @@ SWHOIS [<nick>]
     /SWHOIS farnsworth
     /SWHOIS \@farnsworth
 HELP
+	}
+	elsif ($args =~ /^slack_profile_sync\s*$/) {
+		$is_helping = 1;
 
-	Irssi::print($help, MSGLEVEL_CLIENTCRAP);
-	Irssi::signal_stop();
+		$help = <<HELP;
+%9Syntax:%9
+
+SLACK_PROFILE_SYNC
+
+%9Description:%9
+
+    Re-fetches the users list from Slack and updates the script's internal
+    cache with this copy. %9Note: this will block Irssi and take a while.%9
+
+%9Examples:%9
+
+    /SLACK_PROFILE_SYNC
+HELP
+	}
+	elsif ($args =~ /^slack_profile_set\s*$/) {
+		$is_helping = 1;
+
+		$help = <<HELP;
+%9Syntax:%9
+
+SLACK_PROFILE_SET <key> <value>
+
+%9Description:%9
+
+    Update the given Slack profile field for the current nick.
+
+%9Examples:%9
+
+    /SLACK_PROFILE_SET first_name Lisa
+HELP
+	}
+
+	if ($is_helping) {
+		Irssi::print($help, MSGLEVEL_CLIENTCRAP);
+		Irssi::signal_stop();
+	}
 }
 
 sub users_list_cache {
