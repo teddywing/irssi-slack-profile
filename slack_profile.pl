@@ -479,6 +479,10 @@ sub swhois {
 	# If $username starts with @, strip it
 	$username =~ s/^@//;
 
+	# Trim leading and trailing whitespace
+	$username =~ s/^\s+//;
+	$username =~ s/\s+$//;
+
 	if (my $user = find_user($username)) {
 		print_whois($user);
 	}
