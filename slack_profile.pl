@@ -53,7 +53,7 @@ use URI;
 use vars qw($VERSION %IRSSI);
 use Irssi;
 
-$VERSION = '1.00';
+$VERSION = '1.01';
 %IRSSI = {
 	authors     => 'Teddy Wing',
 	contact     => 'irssi@teddywing.com',
