@@ -266,12 +266,14 @@ sub find_user {
 sub print_whois {
 	my ($user) = @_;
 
-	sub maybe_print_field {
-		my ($name, $value) = @_;
+	# Append spaces to the end of $label such that the length of the result is
+	# equal to $length
+	sub pad_label {
+		my ($label, $length) = @_;
 
-		if ($value) {
-			Irssi::print("  $name : $value");
-		}
+		my $padding = $length - length $label;
+
+		$label . ' ' x $padding;
 	}
 
 	my $bot = '';
@@ -280,22 +282,64 @@ sub print_whois {
 		$bot = ' (bot)';
 	}
 
-	Irssi::print($user->{'name'} . $bot);
-	maybe_print_field('name ', $user->{'real_name'});
-	maybe_print_field('title', $user->{'profile'}->{'title'});
-	maybe_print_field('email', $user->{'profile'}->{'email'});
-	maybe_print_field('phone', $user->{'profile'}->{'phone'});
-	maybe_print_field('skype', $user->{'profile'}->{'skype'});
-	maybe_print_field('tz   ', $user->{'tz_label'});
+	my @fields = (
+		{
+			label => 'name',
+			value => $user->{'real_name'},
+		},
+		{
+			label => 'title',
+			value => $user->{'profile'}->{'title'},
+		},
+		{
+			label => 'email',
+			value => $user->{'profile'}->{'email'},
+		},
+		{
+			label => 'phone',
+			value => $user->{'profile'}->{'phone'},
+		},
+		{
+			label => 'skype',
+			value => $user->{'profile'}->{'skype'},
+		},
+		{
+			label => 'tz',
+			value => $user->{'tz_label'},
+		},
+	);
 
 	foreach my $key (keys %{$user->{'fields'}}) {
-		my $label = $user->{'fields'}->{$key}->{'label'};
-		my $value = $user->{'fields'}->{$key}->{'value'};
-
-		maybe_print_field($label, $value);
+		push @fields, {
+			label => $user->{'fields'}->{$key}->{'label'},
+			value => $user->{'fields'}->{$key}->{'value'},
+		};
 	}
 
-	maybe_print_field('status', $user->{'presence'});
+	push @fields, {
+		label => 'status',
+		value => $user->{'presence'},
+	};
+
+	# Determine the longest label so we can pad others accordingly
+	my $max_label_length = 0;
+	for my $field (@fields) {
+		my $length = length $field->{'label'};
+		if ($length > $max_label_length) {
+			$max_label_length = $length;
+		}
+	}
+
+	Irssi::print($user->{'name'} . $bot);
+
+	for my $field (@fields) {
+		if ($field->{'value'}) {
+			# Pad field labels so that the colons line up vertically
+			my $label = pad_label($field->{'label'}, $max_label_length);
+
+			Irssi::print("  $label : $field->{'value'}");
+		}
+	}
 
 	Irssi::print('End of SWHOIS');
 }
