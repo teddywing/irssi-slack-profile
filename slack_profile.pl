@@ -303,7 +303,7 @@ sub update_user_profile {
 
 	# If $key is a custom field, find the custom field's id and use
 	# that as the key instead.
-	unless ($key ~~ @profile_fields) {
+	unless (grep { $_ eq $key } @profile_fields) {
 		# Find key in custom field labels
 		for my $custom_field (keys %{$user->{'fields'}}) {
 			if (underscorize($user->{'fields'}->{$custom_field}->{'label'})
