@@ -2,7 +2,7 @@ irssi-slack-profile
 ===================
 
 An Irssi plugin that provides WHOIS-style profile information about Slack
-users.
+users and allows you to update your own Slack profile.
 
 
 ## Configuration
@@ -27,6 +27,14 @@ The resulting output will appear as:
 	00:00 -!- Irssi:   phone : 2125553455
 	00:00 -!- Irssi:   tz    : Eastern Daylight Time
 	00:00 -!- Irssi: End of SWHOIS
+
+You can update your own profile as well:
+
+	/slack_profile_set last_name Farnsworth
+
+If the cached profile information gets out of date, it can be refreshed:
+
+	/slack_profile_sync
 
 
 ## License
